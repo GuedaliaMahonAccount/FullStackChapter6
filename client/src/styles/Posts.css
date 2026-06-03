@@ -1,0 +1,376 @@
+/* ====================================================
+   Posts & Comments Page Styles
+   ==================================================== */
+
+/* ─── Posts Header ───────────────────────────── */
+.posts-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-xl);
+  flex-wrap: wrap;
+  gap: var(--space-md);
+}
+
+.posts-title {
+  font-size: var(--font-size-3xl);
+  font-weight: 800;
+  background: var(--gradient-accent);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─── Create Post Form ───────────────────────── */
+.create-post-toggle {
+  margin-bottom: var(--space-lg);
+}
+
+.create-post-form {
+  margin-bottom: var(--space-xl);
+  padding: var(--space-lg);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  animation: scaleIn var(--transition-base) ease;
+}
+
+.create-post-form .form-group {
+  margin-bottom: var(--space-md);
+}
+
+.create-post-actions {
+  display: flex;
+  gap: var(--space-sm);
+  justify-content: flex-end;
+  margin-top: var(--space-md);
+}
+
+/* ─── Posts Grid ─────────────────────────────── */
+.posts-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+}
+
+@media (min-width: 768px) {
+  .posts-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ─── Post Card ──────────────────────────────── */
+.post-card {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-lg);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  transition: all var(--transition-base);
+  animation: fadeIn var(--transition-base) ease;
+  cursor: pointer;
+}
+
+.post-card:hover {
+  border-color: var(--color-border-hover);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-2px);
+}
+
+.post-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.post-card-title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  line-height: 1.4;
+  flex: 1;
+}
+
+.post-card-body {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin-bottom: var(--space-md);
+  flex: 1;
+}
+
+.post-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border);
+}
+
+.post-author {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.post-author-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--gradient-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: white;
+}
+
+.post-card-actions {
+  display: flex;
+  gap: var(--space-xs);
+}
+
+.post-card-actions .btn-sm {
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.post-card:hover .post-card-actions .btn-sm {
+  opacity: 1;
+}
+
+.posts-empty {
+  text-align: center;
+  padding: var(--space-3xl);
+  color: var(--color-text-muted);
+  grid-column: 1 / -1;
+}
+
+/* ─── Post Detail Page ───────────────────────── */
+.post-detail {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.post-detail-back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-lg);
+  transition: color var(--transition-fast);
+  text-decoration: none;
+}
+
+.post-detail-back:hover {
+  color: var(--color-accent);
+}
+
+.post-detail-card {
+  padding: var(--space-2xl);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  margin-bottom: var(--space-xl);
+  animation: scaleIn var(--transition-base) ease;
+}
+
+.post-detail-title {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-md);
+  line-height: 1.3;
+}
+
+.post-detail-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.post-detail-body {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  line-height: 1.8;
+  white-space: pre-wrap;
+}
+
+.post-detail-actions {
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border);
+}
+
+/* ─── Edit Post Form ─────────────────────────── */
+.edit-post-form {
+  margin-bottom: var(--space-xl);
+  padding: var(--space-lg);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 0 0 3px var(--color-accent-muted);
+}
+
+/* ─── Comments Section ───────────────────────── */
+.comments-section {
+  margin-top: var(--space-xl);
+}
+
+.comments-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-lg);
+}
+
+.comments-title {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.comments-count {
+  color: var(--color-text-muted);
+  font-weight: 400;
+  font-size: var(--font-size-sm);
+}
+
+/* ─── Comment Item ───────────────────────────── */
+.comment-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.comment-item {
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  animation: slideIn var(--transition-base) ease;
+}
+
+.comment-item:hover {
+  border-color: var(--color-border-hover);
+}
+
+.comment-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-sm);
+}
+
+.comment-author {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.comment-author-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+}
+
+.comment-author-name {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.comment-author-email {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.comment-body {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.comment-actions {
+  display: flex;
+  gap: var(--space-xs);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.comment-item:hover .comment-actions {
+  opacity: 1;
+}
+
+/* ─── Add Comment Form ───────────────────────── */
+.add-comment-form {
+  margin-top: var(--space-lg);
+  padding: var(--space-lg);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.add-comment-form .form-group {
+  margin-bottom: var(--space-md);
+}
+
+.add-comment-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+}
+
+/* ─── Edit Comment ───────────────────────────── */
+.comment-edit-input {
+  width: 100%;
+  padding: 0.4rem 0.6rem;
+  background: var(--color-bg-input);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-sm);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-accent-muted);
+  resize: vertical;
+  min-height: 60px;
+}
+
+@media (max-width: 640px) {
+  .post-detail-card {
+    padding: var(--space-lg);
+  }
+
+  .comment-actions {
+    opacity: 1;
+  }
+
+  .post-card-actions .btn-sm {
+    opacity: 1;
+  }
+}
