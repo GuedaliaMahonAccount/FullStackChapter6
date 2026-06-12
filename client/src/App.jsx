@@ -5,101 +5,53 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Loader from './components/Loader';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
 import Todos from './pages/Todos';
 import Posts from './pages/Posts';
 import PostDetail from './pages/PostDetail';
+import Albums from './pages/Albums';
+import AlbumDetail from './pages/AlbumDetail';
 import Profile from './pages/Profile';
 import Admin from './pages/Admin';
 
-/**
- * App Component
- * 
- * Main application with routing.
- * Public routes: /login, /register
- * Protected routes: /users/:username/todos, /posts, /profile
- * Admin routes: /admin
- */
 const App = () => {
   const { isAuthenticated, loading, user } = useAuth();
 
-  if (loading) {
-    return <Loader message="Loading application..." />;
-  }
+  if (loading) return <Loader message="Loading application..." />;
 
   return (
     <>
-      {/* Navbar only shows when authenticated */}
       {isAuthenticated && <Navbar />}
 
       <Routes>
         {/* Public Routes */}
         <Route
           path="/login"
-          element={
-            isAuthenticated
-              ? <Navigate to={`/users/${user?.username}/todos`} replace />
-              : <Login />
-          }
+          element={isAuthenticated ? <Navigate to={`/users/${user?.username}/dashboard`} replace /> : <Login />}
         />
         <Route
           path="/register"
-          element={
-            isAuthenticated
-              ? <Navigate to={`/users/${user?.username}/todos`} replace />
-              : <Register />
-          }
+          element={isAuthenticated ? <Navigate to={`/users/${user?.username}/dashboard`} replace /> : <Register />}
         />
 
-        {/* Protected Routes — Dynamic URLs with username */}
-        <Route
-          path="/users/:username/todos"
-          element={
-            <ProtectedRoute>
-              <Todos />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/users/:username/posts"
-          element={
-            <ProtectedRoute>
-              <Posts />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/users/:username/posts/:postId"
-          element={
-            <ProtectedRoute>
-              <PostDetail />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/users/:username/profile"
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
+        {/* Protected Routes */}
+        <Route path="/users/:username/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/users/:username/todos" element={<ProtectedRoute><Todos /></ProtectedRoute>} />
+        <Route path="/users/:username/posts" element={<ProtectedRoute><Posts /></ProtectedRoute>} />
+        <Route path="/users/:username/posts/:postId" element={<ProtectedRoute><PostDetail /></ProtectedRoute>} />
+        <Route path="/users/:username/albums" element={<ProtectedRoute><Albums /></ProtectedRoute>} />
+        <Route path="/users/:username/albums/:albumId" element={<ProtectedRoute><AlbumDetail /></ProtectedRoute>} />
+        <Route path="/users/:username/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
         {/* Admin Route */}
-        <Route
-          path="/admin"
-          element={
-            <ProtectedRoute adminOnly>
-              <Admin />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/admin" element={<ProtectedRoute adminOnly><Admin /></ProtectedRoute>} />
 
-        {/* Catch-all: redirect to login or todos */}
+        {/* Catch-all */}
         <Route
           path="*"
           element={
             isAuthenticated
-              ? <Navigate to={`/users/${user?.username}/todos`} replace />
+              ? <Navigate to={`/users/${user?.username}/dashboard`} replace />
               : <Navigate to="/login" replace />
           }
         />

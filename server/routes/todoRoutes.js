@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { auth } = require('../middleware/auth');
 const { checkOwnership } = require('../middleware/ownership');
+const { cache } = require('../middleware/cache');
 const Todo = require('../models/Todo');
 const {
   getTodos,
@@ -24,8 +25,8 @@ const {
  * DELETE /todos/:id    — Soft delete todo (owner or admin)
  */
 
-router.get('/', auth, getTodos);
-router.get('/:id', auth, getTodoById);
+router.get('/', auth, cache(20_000), getTodos);
+router.get('/:id', auth, cache(20_000), getTodoById);
 router.post('/', auth, createTodo);
 router.put('/:id', auth, checkOwnership(Todo), updateTodo);
 router.delete('/:id', auth, checkOwnership(Todo), deleteTodo);

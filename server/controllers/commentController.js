@@ -1,75 +1,40 @@
 const Comment = require('../models/Comment');
 const Post = require('../models/Post');
+const User = require('../models/User');
+const { success, created, updated, deleted, noData, notFound, validationError } = require('../utils/response');
+const { invalidatePath } = require('../middleware/cache');
+const logActivity = require('../utils/activityLogger');
 
-/**
- * GET /comments
- * Get all non-deleted comments.
- * 
- * Query params: ?postId=<id>
- */
 const getComments = async (req, res, next) => {
   try {
     const filter = { isDeleted: false };
+    if (req.query.postId) filter.postId = req.query.postId;
 
-    // Optional postId filter (replicates jsonplaceholder: /comments?postId=1)
-    if (req.query.postId) {
-      filter.postId = req.query.postId;
-    }
-
-    const comments = await Comment.find(filter)
-      .populate('userId', 'username name')
-      .sort({ createdAt: 1 });
-
-    res.json(comments);
+    const comments = await Comment.find(filter).populate('userId', 'username name').sort({ createdAt: 1 });
+    if (comments.length === 0) return noData(res, 'No comments found.');
+    return success(res, comments, `${comments.length} comment(s) found.`);
   } catch (error) {
     next(error);
   }
 };
 
-/**
- * GET /comments/:id
- * Get a single comment by ID.
- */
 const getCommentById = async (req, res, next) => {
   try {
-    const comment = await Comment.findOne({
-      _id: req.params.id,
-      isDeleted: false,
-    }).populate('userId', 'username name');
-
-    if (!comment) {
-      return res.status(404).json({ error: 'Comment not found.' });
-    }
-
-    res.json(comment);
+    const comment = await Comment.findOne({ _id: req.params.id, isDeleted: false }).populate('userId', 'username name');
+    if (!comment) return notFound(res, 'Comment not found.');
+    return success(res, comment, 'Comment retrieved.');
   } catch (error) {
     next(error);
   }
 };
 
-/**
- * POST /comments
- * Create a new comment on a post.
- * userId is set from the authenticated user's token.
- * name and email are auto-filled from the user if not provided.
- * 
- * Body: { postId, body, name?, email? }
- */
 const createComment = async (req, res, next) => {
   try {
     const { postId, body, name, email } = req.body;
+    if (!postId || !body) return validationError(res, 'postId and body are required.');
 
-    if (!postId || !body) {
-      return res.status(400).json({
-        error: 'postId and body are required.',
-      });
-    }
-
-    // Verify the post exists and is not deleted
     const post = await Post.findOne({ _id: postId, isDeleted: false });
-    if (!post) {
-      return res.status(404).json({ error: 'Post not found.' });
-    }
+    if (!post) return notFound(res, 'Post not found.');
 
     const comment = await Comment.create({
       postId,
@@ -78,61 +43,46 @@ const createComment = async (req, res, next) => {
       email: email || '',
       body,
     });
-
     await comment.populate('userId', 'username name');
-
-    res.status(201).json(comment);
+    invalidatePath('/posts');
+    await User.findByIdAndUpdate(req.user.id, { $set: { lastActivityAt: new Date() } });
+    logActivity(req.user.id, 'CREATE', 'comment', comment._id, comment.body);
+    return created(res, comment, 'Comment added.');
   } catch (error) {
     next(error);
   }
 };
 
-/**
- * PUT /comments/:id
- * Update a comment's body.
- * Owner only (or admin). Uses req.resource from ownership middleware.
- * 
- * Body: { body?, name? }
- */
 const updateComment = async (req, res, next) => {
   try {
     const comment = req.resource;
     const { body, name } = req.body;
-
     if (body !== undefined) comment.body = body;
     if (name !== undefined) comment.name = name;
-
     await comment.save();
     await comment.populate('userId', 'username name');
-
-    res.json(comment);
+    invalidatePath('/posts');
+    await User.findByIdAndUpdate(req.user.id, { $set: { lastActivityAt: new Date() } });
+    logActivity(req.user.id, 'UPDATE', 'comment', comment._id, comment.body);
+    return updated(res, comment, 'Comment updated.');
   } catch (error) {
     next(error);
   }
 };
 
-/**
- * DELETE /comments/:id
- * Soft-delete a comment (set isDeleted to true).
- * Owner only (or admin). Uses req.resource from ownership middleware.
- */
 const deleteComment = async (req, res, next) => {
   try {
     const comment = req.resource;
-
+    const { body: commentBody, _id: commentId } = comment;
     comment.isDeleted = true;
     await comment.save();
-
-    res.json({ message: 'Comment deleted successfully.' });
+    invalidatePath('/posts');
+    await User.findByIdAndUpdate(req.user.id, { $set: { lastActivityAt: new Date() } });
+    logActivity(req.user.id, 'DELETE', 'comment', commentId, commentBody);
+    return deleted(res, 'Comment deleted.');
   } catch (error) {
     next(error);
   }
 };
 
-module.exports = {
-  getComments,
-  getCommentById,
-  createComment,
-  updateComment,
-  deleteComment,
-};
+module.exports = { getComments, getCommentById, createComment, updateComment, deleteComment };

@@ -28,7 +28,7 @@ const Navbar = () => {
       <nav className="navbar" id="main-navbar">
         <div className="navbar-inner container">
           {/* Brand */}
-          <NavLink to={`${basePath}/todos`} className="navbar-brand">
+          <NavLink to={`${basePath}/dashboard`} className="navbar-brand">
             <span className="brand-icon">{'{ }'}</span>
             <span className="brand-text">JSONPlaceholder</span>
           </NavLink>
@@ -57,6 +57,13 @@ const Navbar = () => {
               onClick={() => setMobileOpen(false)}
             >
               ✎ Posts
+            </NavLink>
+            <NavLink
+              to={`${basePath}/albums`}
+              className={({ isActive }) => `nav-link ${isActive ? 'nav-link-active' : ''}`}
+              onClick={() => setMobileOpen(false)}
+            >
+              ⊞ Albums
             </NavLink>
             <NavLink
               to={`${basePath}/profile`}

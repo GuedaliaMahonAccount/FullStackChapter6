@@ -361,6 +361,30 @@
   min-height: 60px;
 }
 
+/* ─── Posts Search ───────────────────────────── */
+.posts-search-form {
+  display: flex;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+  flex-wrap: wrap;
+}
+
+.posts-search-form .form-input {
+  flex: 1;
+  min-width: 200px;
+}
+
+/* ─── Load More ──────────────────────────────── */
+.load-more-container {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-2xl);
+}
+
+.load-more-btn {
+  min-width: 160px;
+}
+
 @media (max-width: 640px) {
   .post-detail-card {
     padding: var(--space-lg);

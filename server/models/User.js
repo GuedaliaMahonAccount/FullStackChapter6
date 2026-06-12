@@ -50,6 +50,20 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    lastLogin: {
+      type: Date,
+      default: null,
+    },
+    lastActivityAt: {
+      type: Date,
+      default: null,
+    },
+    pageSize: {
+      type: Number,
+      default: 12,
+      min: 1,
+      max: 100,
+    },
   },
   {
     timestamps: true,

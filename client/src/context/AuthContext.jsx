@@ -2,13 +2,6 @@ import { createContext, useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authAPI } from '../api/api';
 
-/**
- * AuthContext
- * 
- * Provides authentication state and actions (login, register, logout)
- * to the entire app via React Context.
- * Persists auth data in localStorage.
- */
 export const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
@@ -17,60 +10,60 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Initialize from localStorage on mount
+  // Load from localStorage, then refresh from server to pick up admin changes (e.g. pageSize)
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
+    const storedUser  = localStorage.getItem('user');
 
-    if (storedToken && storedUser) {
-      try {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-      } catch {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-      }
+    if (!storedToken || !storedUser) { setLoading(false); return; }
+
+    let parsed;
+    try { parsed = JSON.parse(storedUser); } catch {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setLoading(false);
+      return;
     }
-    setLoading(false);
+
+    // Apply stale data immediately so the UI can render
+    setToken(storedToken);
+    setUser(parsed);
+
+    // Refresh in background — picks up any admin changes
+    authAPI.me()
+      .then(({ data: env }) => {
+        if (env.status === 'SUCCESS') {
+          setUser(env.data);
+          localStorage.setItem('user', JSON.stringify(env.data));
+        }
+      })
+      .catch(() => {
+        // Token revoked or expired — axios interceptor handles 401 redirect
+      })
+      .finally(() => setLoading(false));
   }, []);
 
-  /**
-   * Log in with username and password.
-   * Stores token + user in state and localStorage.
-   */
   const login = useCallback(async (username, password) => {
-    const { data } = await authAPI.login({ username, password });
-
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('user', JSON.stringify(data.user));
-
-    setToken(data.token);
-    setUser(data.user);
-
-    navigate(`/users/${data.user.username}/todos`);
-    return data;
+    const { data: env } = await authAPI.login({ username, password });
+    // env.status === 'SUCCESS', env.data === { token, user }
+    localStorage.setItem('token', env.data.token);
+    localStorage.setItem('user', JSON.stringify(env.data.user));
+    setToken(env.data.token);
+    setUser(env.data.user);
+    navigate(`/users/${env.data.user.username}/dashboard`);
+    return env.data;
   }, [navigate]);
 
-  /**
-   * Register a new account.
-   * Stores token + user in state and localStorage.
-   */
   const register = useCallback(async (userData) => {
-    const { data } = await authAPI.register(userData);
-
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('user', JSON.stringify(data.user));
-
-    setToken(data.token);
-    setUser(data.user);
-
-    navigate(`/users/${data.user.username}/todos`);
-    return data;
+    const { data: env } = await authAPI.register(userData);
+    localStorage.setItem('token', env.data.token);
+    localStorage.setItem('user', JSON.stringify(env.data.user));
+    setToken(env.data.token);
+    setUser(env.data.user);
+    navigate(`/users/${env.data.user.username}/dashboard`);
+    return env.data;
   }, [navigate]);
 
-  /**
-   * Log out: clear state and localStorage, redirect to login.
-   */
   const logout = useCallback(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -79,10 +72,6 @@ export const AuthProvider = ({ children }) => {
     navigate('/login');
   }, [navigate]);
 
-  /**
-   * Update user data in context and localStorage
-   * (used after profile edits).
-   */
   const updateUserData = useCallback((updatedUser) => {
     setUser(updatedUser);
     localStorage.setItem('user', JSON.stringify(updatedUser));
@@ -100,9 +89,5 @@ export const AuthProvider = ({ children }) => {
     updateUserData,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

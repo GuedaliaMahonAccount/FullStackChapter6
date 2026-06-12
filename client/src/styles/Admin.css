@@ -63,23 +63,22 @@
 }
 
 .search-input-wrapper {
-  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
   flex: 1;
-  max-width: 400px;
+  max-width: 500px;
 }
 
 .search-input {
-  width: 100%;
-  padding-left: 2.5rem;
+  flex: 1;
 }
 
 .search-icon {
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
+  flex-shrink: 0;
   color: var(--color-text-muted);
-  pointer-events: none;
+  font-size: var(--font-size-sm);
+  line-height: 1;
 }
 
 /* ─── Users Table ────────────────────────────── */
@@ -160,6 +159,149 @@
 
 .admin-table tr.blocked-row td {
   opacity: 0.6;
+}
+
+/* ─── Expand button ──────────────────────────── */
+.expand-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast);
+  flex-shrink: 0;
+  line-height: 1;
+}
+.expand-btn:hover { color: var(--color-accent); }
+
+.user-row-expanded td { background: rgba(99, 179, 237, 0.04); }
+.user-row-expanded:hover td { background: rgba(99, 179, 237, 0.07) !important; }
+
+/* ─── Expanded details row ───────────────────── */
+.user-expand-row td {
+  padding: 0 !important;
+  border-bottom: 2px solid var(--color-accent);
+}
+
+.user-expand-content {
+  padding: var(--space-lg) var(--space-xl);
+  background: rgba(99, 179, 237, 0.03);
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: var(--space-2xl);
+}
+
+.user-expand-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  border-right: 1px solid var(--color-border);
+  padding-right: var(--space-xl);
+}
+
+.expand-detail-item { display: flex; flex-direction: column; gap: 2px; }
+
+.detail-label {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+
+.user-expand-activity h4 {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: var(--space-sm);
+}
+
+.activity-item-mini {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-xs) 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: var(--font-size-sm);
+}
+.activity-item-mini:last-child { border-bottom: none; }
+
+/* ─── Global activity feed ───────────────────── */
+.activity-feed { margin-top: var(--space-3xl); }
+
+.activity-feed-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-lg);
+}
+
+.activity-feed-title {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  transition: background-color var(--transition-fast);
+}
+.activity-item:hover { background: var(--color-bg-card-hover); }
+
+.activity-user {
+  font-weight: 600;
+  min-width: 72px;
+  color: var(--color-text-primary);
+}
+
+.activity-resource-title {
+  flex: 1;
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.activity-time {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+/* ─── Muted badge variant ────────────────────── */
+.badge-muted {
+  background: rgba(148, 163, 184, 0.15);
+  color: var(--color-text-secondary);
+}
+
+@media (max-width: 900px) {
+  .user-expand-content {
+    grid-template-columns: 1fr;
+  }
+  .user-expand-details {
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+    padding-right: 0;
+    padding-bottom: var(--space-md);
+  }
 }
 
 @media (max-width: 768px) {

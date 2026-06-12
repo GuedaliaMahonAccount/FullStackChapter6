@@ -29,7 +29,7 @@ const Login = () => {
     try {
       await login(formData.username, formData.password);
     } catch (err) {
-      const message = err.response?.data?.error || 'Login failed. Please try again.';
+      const message = err.response?.data?.message || 'Login failed. Please try again.';
       setError(message);
     } finally {
       setLoading(false);

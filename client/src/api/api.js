@@ -1,41 +1,25 @@
 import axios from 'axios';
 
-/**
- * Centralized Axios instance for all API calls.
- * 
- * - Base URL points to the Express server.
- * - Request interceptor attaches JWT from localStorage.
- * - Response interceptor handles 401 (expired/invalid token) globally.
- */
 const API = axios.create({
   baseURL: 'http://localhost:5000',
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  headers: { 'Content-Type': 'application/json' },
 });
 
-// ─── Request Interceptor ────────────────────────────
 API.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// ─── Response Interceptor ───────────────────────────
 API.interceptors.response.use(
   (response) => response,
   (error) => {
-    // On 401: clear auth data and redirect to login
-    if (error.response && error.response.status === 401) {
+    if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-
-      // Only redirect if not already on login/register
       const path = window.location.pathname;
       if (path !== '/login' && path !== '/register') {
         window.location.href = '/login';
@@ -45,17 +29,12 @@ API.interceptors.response.use(
   }
 );
 
-// ═══════════════════════════════════════════════════════
-// Auth API
-// ═══════════════════════════════════════════════════════
 export const authAPI = {
   login: (credentials) => API.post('/auth/login', credentials),
   register: (userData) => API.post('/auth/register', userData),
+  me: () => API.get('/auth/me'),
 };
 
-// ═══════════════════════════════════════════════════════
-// Users API
-// ═══════════════════════════════════════════════════════
 export const usersAPI = {
   getAll: (params) => API.get('/users', { params }),
   getById: (id) => API.get(`/users/${id}`),
@@ -64,9 +43,6 @@ export const usersAPI = {
   toggleBlock: (id) => API.patch(`/users/${id}/block`),
 };
 
-// ═══════════════════════════════════════════════════════
-// Todos API
-// ═══════════════════════════════════════════════════════
 export const todosAPI = {
   getAll: (params) => API.get('/todos', { params }),
   getById: (id) => API.get(`/todos/${id}`),
@@ -75,28 +51,41 @@ export const todosAPI = {
   delete: (id) => API.delete(`/todos/${id}`),
 };
 
-// ═══════════════════════════════════════════════════════
-// Posts API
-// ═══════════════════════════════════════════════════════
 export const postsAPI = {
   getAll: (params) => API.get('/posts', { params }),
   getById: (id) => API.get(`/posts/${id}`),
-  getByUser: (userId) => API.get(`/users/${userId}/posts`),
+  getByUser: (userId, params) => API.get(`/users/${userId}/posts`, { params }),
   getComments: (postId) => API.get(`/posts/${postId}/comments`),
   create: (data) => API.post('/posts', data),
   update: (id, data) => API.put(`/posts/${id}`, data),
   delete: (id) => API.delete(`/posts/${id}`),
 };
 
-// ═══════════════════════════════════════════════════════
-// Comments API
-// ═══════════════════════════════════════════════════════
 export const commentsAPI = {
   getAll: (params) => API.get('/comments', { params }),
   getById: (id) => API.get(`/comments/${id}`),
   create: (data) => API.post('/comments', data),
   update: (id, data) => API.put(`/comments/${id}`, data),
   delete: (id) => API.delete(`/comments/${id}`),
+};
+
+export const albumsAPI = {
+  getAll: (params) => API.get('/albums', { params }),
+  getById: (id) => API.get(`/albums/${id}`),
+  getPhotos: (id, params) => API.get(`/albums/${id}/photos`, { params }),
+  create: (data) => API.post('/albums', data),
+  update: (id, data) => API.put(`/albums/${id}`, data),
+  delete: (id) => API.delete(`/albums/${id}`),
+  addPhoto: (albumId, data) => API.post(`/albums/${albumId}/photos`, data),
+  deletePhoto: (albumId, photoId) => API.delete(`/albums/${albumId}/photos/${photoId}`),
+};
+
+export const dashboardAPI = {
+  getStats: () => API.get('/dashboard/stats'),
+};
+
+export const activityAPI = {
+  getAll: (params) => API.get('/activity', { params }),
 };
 
 export default API;

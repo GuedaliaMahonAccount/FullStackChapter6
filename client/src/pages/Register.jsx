@@ -34,7 +34,7 @@ const Register = () => {
     try {
       await register(formData);
     } catch (err) {
-      const message = err.response?.data?.error || 'Registration failed. Please try again.';
+      const message = err.response?.data?.message || 'Registration failed. Please try again.';
       setError(message);
     } finally {
       setLoading(false);

@@ -1,128 +1,84 @@
 const Todo = require('../models/Todo');
+const User = require('../models/User');
+const { success, created, updated, deleted, noData, notFound, forbidden } = require('../utils/response');
+const { invalidate } = require('../middleware/cache');
+const logActivity = require('../utils/activityLogger');
 
-/**
- * GET /todos
- * Get all todos for the authenticated user.
- * Supports query filtering: ?completed=true|false
- */
 const getTodos = async (req, res, next) => {
   try {
-    const filter = {
-      userId: req.user.id,
-      isDeleted: false,
-    };
-
-    // Optional completed filter
-    if (req.query.completed !== undefined) {
-      filter.completed = req.query.completed === 'true';
-    }
+    const filter = { userId: req.user.id, isDeleted: false };
+    if (req.query.completed !== undefined) filter.completed = req.query.completed === 'true';
+    if (req.query.title) filter.title = { $regex: req.query.title, $options: 'i' };
+    if (req.query._id) filter._id = req.query._id;
 
     const todos = await Todo.find(filter).sort({ createdAt: 1 });
-    res.json(todos);
+    if (todos.length === 0) return noData(res, 'No todos found.');
+    return success(res, todos, `${todos.length} todo(s) found.`);
   } catch (error) {
     next(error);
   }
 };
 
-/**
- * GET /todos/:id
- * Get a single todo by ID. Owner only.
- */
 const getTodoById = async (req, res, next) => {
   try {
-    const todo = await Todo.findOne({
-      _id: req.params.id,
-      isDeleted: false,
-    });
-
-    if (!todo) {
-      return res.status(404).json({ error: 'Todo not found.' });
-    }
-
-    // Check ownership (unless admin)
+    const todo = await Todo.findOne({ _id: req.params.id, isDeleted: false });
+    if (!todo) return notFound(res, 'Todo not found.');
     if (todo.userId.toString() !== req.user.id && req.user.role !== 'admin') {
-      return res.status(403).json({
-        error: 'Access denied. You can only view your own todos.',
-      });
+      return forbidden(res, 'Access denied. You can only view your own todos.');
     }
-
-    res.json(todo);
+    return success(res, todo, 'Todo retrieved.');
   } catch (error) {
     next(error);
   }
 };
 
-/**
- * POST /todos
- * Create a new todo for the authenticated user.
- * 
- * Body: { title }
- */
 const createTodo = async (req, res, next) => {
   try {
     const { title } = req.body;
-
     if (!title) {
-      return res.status(400).json({ error: 'Title is required.' });
+      const { validationError } = require('../utils/response');
+      return validationError(res, 'Title is required.');
     }
 
-    const todo = await Todo.create({
-      userId: req.user.id,
-      title,
-    });
-
-    res.status(201).json(todo);
+    const todo = await Todo.create({ userId: req.user.id, title });
+    invalidate(req.user.id);
+    await User.findByIdAndUpdate(req.user.id, { $set: { lastActivityAt: new Date() } });
+    logActivity(req.user.id, 'CREATE', 'todo', todo._id, todo.title);
+    return created(res, todo, 'Todo created.');
   } catch (error) {
     next(error);
   }
 };
 
-/**
- * PUT /todos/:id
- * Update a todo (title and/or completed status).
- * Owner only (or admin).
- * 
- * Body: { title?, completed? }
- */
 const updateTodo = async (req, res, next) => {
   try {
-    // req.resource is set by checkOwnership middleware
     const todo = req.resource;
     const { title, completed } = req.body;
-
     if (title !== undefined) todo.title = title;
     if (completed !== undefined) todo.completed = completed;
-
     await todo.save();
-    res.json(todo);
+    invalidate(req.user.id);
+    await User.findByIdAndUpdate(req.user.id, { $set: { lastActivityAt: new Date() } });
+    logActivity(req.user.id, 'UPDATE', 'todo', todo._id, todo.title);
+    return updated(res, todo, 'Todo updated.');
   } catch (error) {
     next(error);
   }
 };
 
-/**
- * DELETE /todos/:id
- * Soft-delete a todo (set isDeleted to true).
- * Owner only (or admin).
- */
 const deleteTodo = async (req, res, next) => {
   try {
-    // req.resource is set by checkOwnership middleware
     const todo = req.resource;
-
+    const { title: todoTitle, _id: todoId } = todo;
     todo.isDeleted = true;
     await todo.save();
-
-    res.json({ message: 'Todo deleted successfully.' });
+    invalidate(req.user.id);
+    await User.findByIdAndUpdate(req.user.id, { $set: { lastActivityAt: new Date() } });
+    logActivity(req.user.id, 'DELETE', 'todo', todoId, todoTitle);
+    return deleted(res, 'Todo deleted.');
   } catch (error) {
     next(error);
   }
 };
 
-module.exports = {
-  getTodos,
-  getTodoById,
-  createTodo,
-  updateTodo,
-  deleteTodo,
-};
+module.exports = { getTodos, getTodoById, createTodo, updateTodo, deleteTodo };

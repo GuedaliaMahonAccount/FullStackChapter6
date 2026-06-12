@@ -1,175 +1,125 @@
 const Post = require('../models/Post');
 const Comment = require('../models/Comment');
+const User = require('../models/User');
+const { success, created, updated, deleted, noData, notFound, validationError } = require('../utils/response');
+const { invalidate, invalidatePath } = require('../middleware/cache');
+const logActivity = require('../utils/activityLogger');
 
-/**
- * GET /posts
- * Get all non-deleted posts.
- * Populates userId with username and name for display.
- * 
- * Query params: ?userId=<id>
- */
 const getPosts = async (req, res, next) => {
   try {
     const filter = { isDeleted: false };
+    if (req.query.userId) filter.userId = req.query.userId;
+    if (req.query.mine === 'true') filter.userId = req.user.id;
+    if (req.query.title) filter.title = { $regex: req.query.title, $options: 'i' };
+    if (req.query._id) filter._id = req.query._id;
 
-    // Optional userId filter
-    if (req.query.userId) {
-      filter.userId = req.query.userId;
-    }
+    const page  = Math.max(1, parseInt(req.query.page)  || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 12));
+    const skip  = (page - 1) * limit;
 
-    const posts = await Post.find(filter)
-      .populate('userId', 'username name')
-      .sort({ createdAt: -1 });
+    const [posts, total] = await Promise.all([
+      Post.find(filter).populate('userId', 'username name').sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Post.countDocuments(filter),
+    ]);
 
-    res.json(posts);
+    if (total === 0) return noData(res, 'No posts found.');
+    return success(res, { posts, total, page, limit, hasMore: skip + posts.length < total }, `${total} post(s) found.`);
   } catch (error) {
     next(error);
   }
 };
 
-/**
- * GET /posts/:id
- * Get a single post by ID.
- */
 const getPostById = async (req, res, next) => {
   try {
-    const post = await Post.findOne({
-      _id: req.params.id,
-      isDeleted: false,
-    }).populate('userId', 'username name');
-
-    if (!post) {
-      return res.status(404).json({ error: 'Post not found.' });
-    }
-
-    res.json(post);
+    const post = await Post.findOne({ _id: req.params.id, isDeleted: false }).populate('userId', 'username name');
+    if (!post) return notFound(res, 'Post not found.');
+    return success(res, post, 'Post retrieved.');
   } catch (error) {
     next(error);
   }
 };
 
-/**
- * GET /posts/:id/comments
- * Get all non-deleted comments for a specific post.
- * Optimized: fetches post existence + comments in parallel.
- */
 const getPostComments = async (req, res, next) => {
   try {
     const [post, comments] = await Promise.all([
       Post.findOne({ _id: req.params.id, isDeleted: false }).select('_id'),
-      Comment.find({ postId: req.params.id, isDeleted: false })
-        .populate('userId', 'username name')
-        .sort({ createdAt: 1 }),
+      Comment.find({ postId: req.params.id, isDeleted: false }).populate('userId', 'username name').sort({ createdAt: 1 }),
     ]);
-
-    if (!post) {
-      return res.status(404).json({ error: 'Post not found.' });
-    }
-
-    res.json(comments);
+    if (!post) return notFound(res, 'Post not found.');
+    if (comments.length === 0) return noData(res, 'No comments on this post yet.');
+    return success(res, comments, `${comments.length} comment(s) found.`);
   } catch (error) {
     next(error);
   }
 };
 
-/**
- * GET /users/:userId/posts
- * Get all non-deleted posts by a specific user.
- */
 const getUserPosts = async (req, res, next) => {
   try {
-    const posts = await Post.find({
-      userId: req.params.userId,
-      isDeleted: false,
-    })
-      .populate('userId', 'username name')
-      .sort({ createdAt: -1 });
+    const filter = { userId: req.params.userId, isDeleted: false };
+    const page  = Math.max(1, parseInt(req.query.page)  || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 12));
+    const skip  = (page - 1) * limit;
 
-    res.json(posts);
+    const [posts, total] = await Promise.all([
+      Post.find(filter).populate('userId', 'username name').sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Post.countDocuments(filter),
+    ]);
+
+    if (total === 0) return noData(res, 'No posts found for this user.');
+    return success(res, { posts, total, page, limit, hasMore: skip + posts.length < total }, `${total} post(s) found.`);
   } catch (error) {
     next(error);
   }
 };
 
-/**
- * POST /posts
- * Create a new post for the authenticated user.
- * 
- * Body: { title, body }
- */
 const createPost = async (req, res, next) => {
   try {
     const { title, body } = req.body;
+    if (!title || !body) return validationError(res, 'Title and body are required.');
 
-    if (!title || !body) {
-      return res.status(400).json({
-        error: 'Title and body are required.',
-      });
-    }
-
-    const post = await Post.create({
-      userId: req.user.id,
-      title,
-      body,
-    });
-
-    // Populate the userId before returning
+    const post = await Post.create({ userId: req.user.id, title, body });
     await post.populate('userId', 'username name');
-
-    res.status(201).json(post);
+    invalidatePath('/posts');
+    await User.findByIdAndUpdate(req.user.id, { $set: { lastActivityAt: new Date() } });
+    logActivity(req.user.id, 'CREATE', 'post', post._id, post.title);
+    return created(res, post, 'Post created.');
   } catch (error) {
     next(error);
   }
 };
 
-/**
- * PUT /posts/:id
- * Update a post (title and/or body).
- * Owner only (or admin). Uses req.resource from ownership middleware.
- * 
- * Body: { title?, body? }
- */
 const updatePost = async (req, res, next) => {
   try {
     const post = req.resource;
     const { title, body } = req.body;
-
     if (title !== undefined) post.title = title;
     if (body !== undefined) post.body = body;
-
     await post.save();
     await post.populate('userId', 'username name');
-
-    res.json(post);
+    invalidatePath('/posts');
+    await User.findByIdAndUpdate(req.user.id, { $set: { lastActivityAt: new Date() } });
+    logActivity(req.user.id, 'UPDATE', 'post', post._id, post.title);
+    return updated(res, post, 'Post updated.');
   } catch (error) {
     next(error);
   }
 };
 
-/**
- * DELETE /posts/:id
- * Soft-delete a post (set isDeleted to true).
- * Owner only (or admin). Uses req.resource from ownership middleware.
- */
 const deletePost = async (req, res, next) => {
   try {
     const post = req.resource;
-
+    const { title: postTitle, _id: postId } = post;
+    await Comment.updateMany({ postId: post._id, isDeleted: false }, { $set: { isDeleted: true } });
     post.isDeleted = true;
     await post.save();
-
-    res.json({ message: 'Post deleted successfully.' });
+    invalidatePath('/posts');
+    invalidatePath('/comments');
+    await User.findByIdAndUpdate(req.user.id, { $set: { lastActivityAt: new Date() } });
+    logActivity(req.user.id, 'DELETE', 'post', postId, postTitle);
+    return deleted(res, 'Post and its comments deleted.');
   } catch (error) {
     next(error);
   }
 };
 
-module.exports = {
-  getPosts,
-  getPostById,
-  getPostComments,
-  getUserPosts,
-  createPost,
-  updatePost,
-  deletePost,
-};
+module.exports = { getPosts, getPostById, getPostComments, getUserPosts, createPost, updatePost, deletePost };

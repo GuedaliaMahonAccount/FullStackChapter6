@@ -1,15 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { register, login } = require('../controllers/authController');
-
-/**
- * Auth Routes
- * 
- * POST /auth/register  — Create a new user account
- * POST /auth/login     — Authenticate and receive a JWT
- */
+const { auth } = require('../middleware/auth');
+const { register, login, getMe } = require('../controllers/authController');
 
 router.post('/register', register);
 router.post('/login', login);
+router.get('/me', auth, getMe);
 
 module.exports = router;
