@@ -7,6 +7,7 @@ const Post = require('./models/Post');
 const Comment = require('./models/Comment');
 const Album = require('./models/Album');
 const Photo = require('./models/Photo');
+const ActivityLog = require('./models/ActivityLog');
 
 // 30 unique seeds per user — completely separate sets so photos are distinct across users
 const USER_ALBUMS = [
@@ -67,6 +68,7 @@ const seedData = async () => {
       Comment.deleteMany({}),
       Album.deleteMany({}),
       Photo.deleteMany({}),
+      ActivityLog.deleteMany({}),
     ]);
     console.log('Database cleared.');
 
