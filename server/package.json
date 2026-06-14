@@ -1,14 +1,14 @@
 {
   "name": "jsonplaceholder-server",
   "version": "1.0.0",
-  "description": "Full-stack REST API mimicking jsonplaceholder.typicode.com — by Guedalia",
+  "description": "Full-stack REST API mimicking jsonplaceholder.typicode.com — by Guedalia & Nerya",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
     "seed": "node seed.js"
   },
-  "author": "Guedalia",
+  "author": "Guedalia & Nerya",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.1",
