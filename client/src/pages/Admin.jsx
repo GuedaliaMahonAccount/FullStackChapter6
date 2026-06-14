@@ -19,7 +19,7 @@ const truncate = (str, n = 48) =>
   str && str.length > n ? str.slice(0, n) + '…' : str || '—';
 
 const Admin = () => {
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, updateUserData  } = useAuth();
 
   // ── Users ──────────────────────────────────────────────────────────────
   const [viewStatus, setViewStatus]       = useState('LOADING');
@@ -133,7 +133,13 @@ const Admin = () => {
     setUpdatingUserId(userId);
     try {
       const { data: env } = await usersAPI.update(userId, { pageSize: val });
-      if (env.status === 'UPDATED') { setUsers((prev) => prev.map((u) => (u._id === userId ? env.data : u))); setEditingPageSize(null); }
+      if (env.status === 'UPDATED') {
+        setUsers((prev) => prev.map((u) => (u._id === userId ? env.data : u)));
+        setEditingPageSize(null);
+        if (userId === currentUser._id) {
+          updateUserData(env.data);
+        }
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to update page size.');
     } finally {
