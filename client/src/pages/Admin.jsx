@@ -19,7 +19,7 @@ const truncate = (str, n = 48) =>
   str && str.length > n ? str.slice(0, n) + '…' : str || '—';
 
 const Admin = () => {
-  const { user: currentUser, updateUserData } = useAuth();
+  const { user: currentUser, updateUserData  } = useAuth();
 
   // ── Users ──────────────────────────────────────────────────────────────
   const [viewStatus, setViewStatus]       = useState('LOADING');
