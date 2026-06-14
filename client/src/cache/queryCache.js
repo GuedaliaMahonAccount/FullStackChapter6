@@ -30,7 +30,7 @@ export function setCached(key, data) {
 }
 
 /**
- * Remove all cache entries whose key starts with prefix.
+ * Remove all cache entries whose key starts with prefix order to invalidate related queries and routes at once (e.g. all /todos/posts queries after creating/updating/deleting).
  */
 export function invalidatePrefix(prefix) {
   for (const k of store.keys()) {

@@ -36,6 +36,7 @@ const cache = (ttlMs = DEFAULT_TTL_MS) => (req, res, next) => {
     return res.json(entry.data);
   }
 
+  // Override res.json to save successful responses before sending to client.
   const originalJson = res.json.bind(res);
   res.json = (data) => {
     if (res.statusCode >= 200 && res.statusCode < 300) {

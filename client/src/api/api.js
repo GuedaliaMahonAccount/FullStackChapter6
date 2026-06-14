@@ -1,10 +1,12 @@
 import axios from 'axios';
 
+// Create a common base URL of the backend API and default headers.
 const API = axios.create({
   baseURL: 'http://localhost:5000',
   headers: { 'Content-Type': 'application/json' },
 });
 
+// Intercept used to automatically attach the JWT token from localStorage to every request.
 API.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -16,6 +18,7 @@ API.interceptors.request.use(
 
 API.interceptors.response.use(
   (response) => response,
+  // At case of unvalid or expired token, we log out the user and redirect to login page.
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
@@ -28,6 +31,10 @@ API.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// ---------------------------------------------------------------------------------------------------------------------------------
+// Define API functions for each resource type, which can be imported and used in React components to interact with the backend API.
+// ---------------------------------------------------------------------------------------------------------------------------------
 
 export const authAPI = {
   login: (credentials) => API.post('/auth/login', credentials),

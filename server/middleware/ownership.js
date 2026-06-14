@@ -1,5 +1,6 @@
 const { notFound, forbidden } = require('../utils/response');
 
+// Middleware to check if the user is the owner of the resource or an admin and allowed to update it.
 const checkOwnership = (Model) => async (req, res, next) => {
   try {
     const resource = await Model.findById(req.params.id);

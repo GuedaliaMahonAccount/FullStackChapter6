@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
     setToken(storedToken);
     setUser(parsed);
 
-    // Refresh in background — picks up any admin changes
+    // Refresh in background — picks up the corrent user.
     authAPI.me()
       .then(({ data: env }) => {
         if (env.status === 'SUCCESS') {
@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
         }
       })
       .catch(() => {
-        // Token revoked or expired — axios interceptor handles 401 redirect
+      // Token revoked or expired — axios interceptor handles 401 redirect, not need more handling here.
       })
       .finally(() => setLoading(false));
   }, []);
