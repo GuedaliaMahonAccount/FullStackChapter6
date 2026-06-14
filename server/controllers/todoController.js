@@ -41,6 +41,7 @@ const createTodo = async (req, res, next) => {
     }
 
     const todo = await Todo.create({ userId: req.user.id, title });
+    // Invalidate cache for this user to ensure they see the new todo in subsequent requests. 
     invalidate(req.user.id);
     await User.findByIdAndUpdate(req.user.id, { $set: { lastActivityAt: new Date() } });
     logActivity(req.user.id, 'CREATE', 'todo', todo._id, todo.title);

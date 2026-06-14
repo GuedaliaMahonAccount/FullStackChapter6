@@ -170,7 +170,6 @@ const Admin = () => {
       u.username?.toLowerCase().includes(q) ||
       u.email?.toLowerCase().includes(q) ||
       u.role?.toLowerCase().includes(q) ||
-      u._id?.toLowerCase().includes(q) ||
       (u.isActive ? 'active' : 'blocked').includes(q)
     );
   });
