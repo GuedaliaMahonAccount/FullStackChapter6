@@ -2,7 +2,7 @@
 
 A premium full-stack REST API and React Client mimicking the capabilities of `jsonplaceholder.typicode.com`, designed and implemented for modern, fast, and secure web experiences.
 
-**Project Author**: Guedalia
+**Project Author**: Guedalia, Nerya
 
 ---
 

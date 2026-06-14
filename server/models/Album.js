@@ -32,6 +32,7 @@ albumSchema.index({ userId: 1, isDeleted: 1 });
 
 albumSchema.set('toJSON', {
   transform: (_doc, ret) => {
+    // Delete the version key to hide internal details
     delete ret.__v;
     return ret;
   },
