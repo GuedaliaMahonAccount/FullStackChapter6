@@ -25,8 +25,7 @@ const register = async (req, res, next) => {
 
     const user = await User.create({ username, password, name, email });
     const token = generateToken(user);
-    const sessionUser = { _id: user._id, username: user.username, name: user.name, role: user.role, pageSize: user.pageSize };
-    return created(res, { token, user: sessionUser }, 'Account created successfully.');
+    return created(res, { token, user: user.toAuthJSON() }, 'Account created successfully.');
   } catch (error) {
     next(error);
   }
@@ -59,8 +58,7 @@ const login = async (req, res, next) => {
     await user.save();
 
     const token = generateToken(user);
-    const sessionUser = { _id: user._id, username: user.username, name: user.name, role: user.role, pageSize: user.pageSize };
-    return success(res, { token, user: sessionUser }, 'Login successful.');
+    return success(res, { token, user: user.toAuthJSON() }, 'Login successful.');
   } catch (error) {
     next(error);
   }
@@ -68,9 +66,9 @@ const login = async (req, res, next) => {
 
 const getMe = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id).select('-password');
+    const user = await User.findById(req.user.id).select('username name email role lastLogin');
     if (!user) return notFound(res, 'User not found.');
-    return success(res, user, 'Profile retrieved.');
+    return success(res, user.toAuthJSON(), 'Profile retrieved.');
   } catch (error) {
     next(error);
   }

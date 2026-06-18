@@ -2,7 +2,7 @@ const Todo = require('../models/Todo');
 const User = require('../models/User');
 const { success, created, updated, deleted, noData, notFound, forbidden } = require('../utils/response');
 const { invalidate } = require('../middleware/cache');
-const logActivity = require('../utils/activityLogger');
+const logActivity = require('../services/activityLogger');
 
 const getTodos = async (req, res, next) => {
   try {

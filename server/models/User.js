@@ -93,6 +93,14 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
+userSchema.methods.toAuthJSON = function () {
+  return { _id: this._id, username: this.username, name: this.name, email: this.email, role: this.role, lastLogin: this.lastLogin };
+};
+
+userSchema.methods.toPublicJSON = function () {
+  return { _id: this._id, username: this.username, name: this.name };
+};
+
 /**
  * Transform: strip password and __v from JSON output.
  */

@@ -3,7 +3,7 @@ const Comment = require('../models/Comment');
 const User = require('../models/User');
 const { success, created, updated, deleted, noData, notFound, validationError } = require('../utils/response');
 const { invalidate, invalidatePath } = require('../middleware/cache');
-const logActivity = require('../utils/activityLogger');
+const logActivity = require('../services/activityLogger');
 
 const getPosts = async (req, res, next) => {
   try {

@@ -6,7 +6,7 @@ const getUsers = async (req, res, next) => {
     const filter = {};
     if (req.query.role && ['admin', 'user'].includes(req.query.role)) filter.role = req.query.role;
 
-    const users = await User.find(filter).sort({ createdAt: -1 });
+    const users = await User.find(filter).sort({ createdAt: -1 }).select('username name email role isActive createdAt');
     if (users.length === 0) return noData(res, 'No users found.');
     return success(res, users, `${users.length} user(s) found.`);
   } catch (error) {
@@ -22,7 +22,7 @@ const getUserById = async (req, res, next) => {
     if (req.user.id !== user._id.toString() && req.user.role !== 'admin') {
       return forbidden(res, 'Access denied. You can only view your own profile.');
     }
-    return success(res, user, 'User retrieved.');
+    return success(res, user.toAuthJSON(), 'User retrieved.');
   } catch (error) {
     next(error);
   }
@@ -46,7 +46,7 @@ const updateUser = async (req, res, next) => {
     if (Object.keys(updateData).length === 0) {
       const user = await User.findById(req.params.id);
       if (!user) return notFound(res, 'User not found.');
-      return updated(res, user, 'No changes detected.');
+      return updated(res, user.toAuthJSON(), 'No changes detected.');
     }
 
     const user = await User.findByIdAndUpdate(
@@ -55,7 +55,7 @@ const updateUser = async (req, res, next) => {
       { new: true, runValidators: true }
     );
     if (!user) return notFound(res, 'User not found.');
-    return updated(res, user, 'User updated successfully.');
+    return updated(res, user.toAuthJSON(), 'User updated successfully.');
   } catch (error) {
     next(error);
   }
@@ -100,7 +100,7 @@ const toggleBlockUser = async (req, res, next) => {
 
     user.isActive = !user.isActive;
     await user.save();
-    return updated(res, user, `User "${user.username}" has been ${user.isActive ? 'unblocked' : 'blocked'}.`);
+    return updated(res, { _id: user._id, username: user.username, isActive: user.isActive }, `User "${user.username}" has been ${user.isActive ? 'unblocked' : 'blocked'}.`);
   } catch (error) {
     next(error);
   }
