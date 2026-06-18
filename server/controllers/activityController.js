@@ -9,7 +9,7 @@ const getActivity = async (req, res, next) => {
     if (req.query.userId) filter.userId = req.query.userId;
 
     const page  = Math.max(1, parseInt(req.query.page)  || 1);
-    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 20));
+    const limit = Math.min(30, Math.max(1, parseInt(req.query.limit) || 20));
     const skip  = (page - 1) * limit;
 
     const [logs, total] = await Promise.all([

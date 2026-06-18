@@ -14,7 +14,7 @@ const getPosts = async (req, res, next) => {
     if (req.query._id) filter._id = req.query._id;
 
     const page  = Math.max(1, parseInt(req.query.page)  || 1);
-    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 12));
+    const limit = Math.min(30, Math.max(1, parseInt(req.query.limit) || 12));
     const skip  = (page - 1) * limit;
 
     const [posts, total] = await Promise.all([
@@ -57,7 +57,7 @@ const getUserPosts = async (req, res, next) => {
   try {
     const filter = { userId: req.params.userId, isDeleted: false };
     const page  = Math.max(1, parseInt(req.query.page)  || 1);
-    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 12));
+    const limit = Math.min(30, Math.max(1, parseInt(req.query.limit) || 12));
     const skip  = (page - 1) * limit;
 
     const [posts, total] = await Promise.all([

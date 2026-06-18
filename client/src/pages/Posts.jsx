@@ -110,7 +110,7 @@ const Posts = () => {
     try {
       const { data: env } = await postsAPI.delete(postId);
       if (env.status === 'DELETED') {
-        const next = posts.filter((p) => p._id !== postId);
+        const next = posts.filter((p) => p.id !== postId);
         setPosts(next);
         setTotal((t) => t - 1);
         if (next.length === 0) setViewStatus('NO_DATA');
@@ -121,7 +121,7 @@ const Posts = () => {
     }
   };
 
-  const goToPost = (post) => navigate(`/users/${user.username}/posts/${post._id}`);
+  const goToPost = (post) => navigate(`/users/${user.username}/posts/${post.id}`);
   const getAuthorName = (post) => post.userId && typeof post.userId === 'object' ? post.userId.name || post.userId.username : 'Unknown';
   const getAuthorInitial = (post) => getAuthorName(post).charAt(0).toUpperCase();
   const isOwner = (post) => {
@@ -197,7 +197,7 @@ const Posts = () => {
             </p>
             <div className="posts-grid">
               {posts.map((post) => (
-                <div key={post._id} className="post-card" onClick={() => goToPost(post)} id={`post-${post._id}`}>
+                <div key={post.id} className="post-card" onClick={() => goToPost(post)} id={`post-${post.id}`}>
                   <div className="post-card-header"><h2 className="post-card-title">{post.title}</h2></div>
                   <p className="post-card-body">{post.body}</p>
                   <div className="post-card-footer">
@@ -209,7 +209,7 @@ const Posts = () => {
                       {isOwner(post) && (
                         <>
                           <button className="btn btn-sm btn-secondary" onClick={(e) => { e.stopPropagation(); goToPost(post); }}>Edit</button>
-                          <button className="btn btn-sm btn-danger" onClick={(e) => handleDelete(e, post._id)}>Delete</button>
+                          <button className="btn btn-sm btn-danger" onClick={(e) => handleDelete(e, post.id)}>Delete</button>
                         </>
                       )}
                     </div>

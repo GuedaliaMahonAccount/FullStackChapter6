@@ -54,8 +54,11 @@ commentSchema.index({ postId: 1, isDeleted: 1 });
  * Transform: strip __v from JSON output.
  */
 commentSchema.set('toJSON', {
-  transform: (_doc, ret) => {
+  transform: (doc, ret) => {
+    ret.id = doc._id.toString();
+    delete ret._id;
     delete ret.__v;
+    delete ret.isDeleted;
     return ret;
   },
 });

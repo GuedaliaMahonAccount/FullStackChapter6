@@ -12,7 +12,7 @@ const getAlbums = async (req, res, next) => {
     if (req.query.title) filter.title = { $regex: req.query.title, $options: 'i' };
 
     const page  = Math.max(1, parseInt(req.query.page)  || 1);
-    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 12));
+    const limit = Math.min(30, Math.max(1, parseInt(req.query.limit) || 12));
     const skip  = (page - 1) * limit;
 
     const [albums, total] = await Promise.all([
@@ -44,7 +44,7 @@ const getAlbumPhotos = async (req, res, next) => {
     if (!album) return notFound(res, 'Album not found.');
 
     const page  = Math.max(1, parseInt(req.query.page)  || 1);
-    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 12));
+    const limit = Math.min(30, Math.max(1, parseInt(req.query.limit) || 12));
     const skip  = (page - 1) * limit;
 
     const [photos, total] = await Promise.all([

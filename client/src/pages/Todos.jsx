@@ -77,9 +77,9 @@ const Todos = () => {
 
   const handleToggle = async (todo) => {
     try {
-      const { data: env } = await todosAPI.update(todo._id, { completed: !todo.completed });
+      const { data: env } = await todosAPI.update(todo.id, { completed: !todo.completed });
       if (env.status === 'UPDATED') {
-        setTodos((prev) => prev.map((t) => (t._id === env.data._id ? env.data : t)));
+        setTodos((prev) => prev.map((t) => (t.id === env.data.id ? env.data : t)));
         invalidatePrefix(`todos:${user._id}`);
       }
     } catch (err) {
@@ -87,14 +87,14 @@ const Todos = () => {
     }
   };
 
-  const startEdit = (todo) => { setEditingId(todo._id); setEditText(todo.title); };
+  const startEdit = (todo) => { setEditingId(todo.id); setEditText(todo.title); };
 
   const handleSaveEdit = async (id) => {
     if (!editText.trim()) return;
     try {
       const { data: env } = await todosAPI.update(id, { title: editText.trim() });
       if (env.status === 'UPDATED') {
-        setTodos((prev) => prev.map((t) => (t._id === env.data._id ? env.data : t)));
+        setTodos((prev) => prev.map((t) => (t.id === env.data.id ? env.data : t)));
         invalidatePrefix(`todos:${user._id}`);
         setEditingId(null);
         setEditText('');
@@ -110,7 +110,7 @@ const Todos = () => {
     try {
       const { data: env } = await todosAPI.delete(id);
       if (env.status === 'DELETED') {
-        const next = todos.filter((t) => t._id !== id);
+        const next = todos.filter((t) => t.id !== id);
         setTodos(next);
         if (next.length === 0) setViewStatus('NO_DATA');
         invalidatePrefix(`todos:${user._id}`);
@@ -188,14 +188,14 @@ const Todos = () => {
           )}
 
           {viewStatus === 'SUCCESS' && todos.map((todo) => (
-            <div key={todo._id} className={`todo-item ${todo.completed ? 'completed' : ''}`} id={`todo-${todo._id}`}>
+            <div key={todo.id} className={`todo-item ${todo.completed ? 'completed' : ''}`} id={`todo-${todo.id}`}>
               <label className="todo-checkbox">
                 <input type="checkbox" checked={todo.completed} onChange={() => handleToggle(todo)} aria-label={`Mark "${todo.title}" as ${todo.completed ? 'incomplete' : 'complete'}`} />
                 <span className="checkmark"></span>
               </label>
 
-              {editingId === todo._id ? (
-                <input type="text" className="todo-edit-input" value={editText} onChange={(e) => setEditText(e.target.value)} onKeyDown={(e) => handleEditKeyDown(e, todo._id)} autoFocus />
+              {editingId === todo.id ? (
+                <input type="text" className="todo-edit-input" value={editText} onChange={(e) => setEditText(e.target.value)} onKeyDown={(e) => handleEditKeyDown(e, todo.id)} autoFocus />
               ) : (
                 <div className="todo-content">
                   <span className="todo-title">{todo.title}</span>
@@ -204,15 +204,15 @@ const Todos = () => {
               )}
 
               <div className="todo-actions">
-                {editingId === todo._id ? (
+                {editingId === todo.id ? (
                   <>
-                    <button className="todo-action-btn save" onClick={() => handleSaveEdit(todo._id)} title="Save">✓</button>
+                    <button className="todo-action-btn save" onClick={() => handleSaveEdit(todo.id)} title="Save">✓</button>
                     <button className="todo-action-btn cancel" onClick={cancelEdit} title="Cancel">✕</button>
                   </>
                 ) : (
                   <>
                     <button className="todo-action-btn edit" onClick={() => startEdit(todo)} title="Edit">✎</button>
-                    <button className="todo-action-btn delete" onClick={() => handleDelete(todo._id)} title="Delete">🗑</button>
+                    <button className="todo-action-btn delete" onClick={() => handleDelete(todo.id)} title="Delete">🗑</button>
                   </>
                 )}
               </div>

@@ -108,14 +108,14 @@ const PostDetail = () => {
     }
   };
 
-  const handleStartEditComment = (comment) => { setEditingCommentId(comment._id); setEditCommentBody(comment.body); };
+  const handleStartEditComment = (comment) => { setEditingCommentId(comment.id); setEditCommentBody(comment.body); };
 
   const handleUpdateComment = async (commentId) => {
     if (!editCommentBody.trim()) return;
     try {
       const { data: env } = await commentsAPI.update(commentId, { body: editCommentBody.trim() });
       if (env.status === 'UPDATED') {
-        setComments((prev) => prev.map((c) => (c._id === commentId ? env.data : c)));
+        setComments((prev) => prev.map((c) => (c.id === commentId ? env.data : c)));
         setEditingCommentId(null);
       }
     } catch (err) {
@@ -128,7 +128,7 @@ const PostDetail = () => {
     try {
       const { data: env } = await commentsAPI.delete(commentId);
       if (env.status === 'DELETED') {
-        const next = comments.filter((c) => c._id !== commentId);
+        const next = comments.filter((c) => c.id !== commentId);
         setComments(next);
         if (next.length === 0) setCommentsStatus('NO_DATA');
       }
@@ -193,7 +193,7 @@ const PostDetail = () => {
               </div>
             </form>
           ) : (
-            <article className="post-detail-card" id={`post-${post._id}`}>
+            <article className="post-detail-card" id={`post-${post.id}`}>
               <h1 className="post-detail-title">{post.title}</h1>
               <div className="post-detail-meta">
                 <span className="post-author-avatar">{getAuthorInitial(post)}</span>
@@ -229,7 +229,7 @@ const PostDetail = () => {
               )}
 
               {commentsStatus === 'SUCCESS' && comments.map((comment) => (
-                <div key={comment._id} className="comment-item" id={`comment-${comment._id}`}>
+                <div key={comment.id} className="comment-item" id={`comment-${comment.id}`}>
                   <div className="comment-header">
                     <div className="comment-author">
                       <span className="comment-author-avatar">{getAuthorInitial(comment)}</span>
@@ -240,20 +240,20 @@ const PostDetail = () => {
                         )}
                       </div>
                     </div>
-                    {isCommentOwner(comment) && editingCommentId !== comment._id && (
+                    {isCommentOwner(comment) && editingCommentId !== comment.id && (
                       <div className="comment-actions">
                         <button className="btn btn-sm btn-secondary" onClick={() => handleStartEditComment(comment)}>Edit</button>
-                        <button className="btn btn-sm btn-danger" onClick={() => handleDeleteComment(comment._id)}>Delete</button>
+                        <button className="btn btn-sm btn-danger" onClick={() => handleDeleteComment(comment.id)}>Delete</button>
                       </div>
                     )}
                   </div>
 
-                  {editingCommentId === comment._id ? (
+                  {editingCommentId === comment.id ? (
                     <div style={{ marginTop: 'var(--space-sm)' }}>
                       <textarea className="comment-edit-input" value={editCommentBody} onChange={(e) => setEditCommentBody(e.target.value)} rows={3} required />
                       <div style={{ display: 'flex', gap: 'var(--space-xs)', marginTop: 'var(--space-xs)', justifyContent: 'flex-end' }}>
                         <button className="btn btn-sm btn-secondary" onClick={() => setEditingCommentId(null)}>Cancel</button>
-                        <button className="btn btn-sm btn-primary" onClick={() => handleUpdateComment(comment._id)} disabled={!editCommentBody.trim()}>Save</button>
+                        <button className="btn btn-sm btn-primary" onClick={() => handleUpdateComment(comment.id)} disabled={!editCommentBody.trim()}>Save</button>
                       </div>
                     </div>
                   ) : (
